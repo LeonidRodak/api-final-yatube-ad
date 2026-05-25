@@ -2,6 +2,8 @@ from pathlib import Path
 
 from datetime import timedelta
 
+from datetime import timedelta
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = "hhz7l-ltdismtf@bzyz+rple7*s*w$jak%whj@(@u0eok^f9k4"
@@ -102,7 +104,6 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": 10,
 }
 
-from datetime import timedelta
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),

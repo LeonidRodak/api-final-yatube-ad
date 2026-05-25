@@ -19,7 +19,8 @@ from rest_framework.pagination import LimitOffsetPagination
 
 
 class OptionalLimitOffsetPagination(LimitOffsetPagination):
-    """Пагинация только если переданы limit/offset — иначе возвращаем весь список (для pytest)"""
+    """Пагинация только если переданы limit/offset — иначе возвращаем\
+        весь список (для pytest)"""
 
     def paginate_queryset(self, queryset, request, view=None):
         if (
