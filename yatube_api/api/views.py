@@ -2,6 +2,9 @@ from rest_framework import viewsets, mixins
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from rest_framework.filters import SearchFilter
 
+from rest_framework.response import Response
+from rest_framework import status
+
 from posts.models import Post, Group, Comment, Follow
 from .serializers import (
     PostSerializer,
@@ -11,12 +14,23 @@ from .serializers import (
 )
 from .permissions import IsAuthorOrReadOnly
 
+from rest_framework.pagination import LimitOffsetPagination
+
+
+class OptionalLimitOffsetPagination(LimitOffsetPagination):
+    """Пагинация только если переданы limit/offset — иначе возвращаем весь список (для pytest)"""
+    def paginate_queryset(self, queryset, request, view=None):
+        if 'limit' not in request.query_params and 'offset' not in request.query_params:
+            return None  # pytest будет получать просто список
+        return super().paginate_queryset(queryset, request, view)
+
 
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
     permission_classes = [IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly]
-    pagination_class = None   # ← это решает тест test_posts_auth_get
+    
+    pagination_class = OptionalLimitOffsetPagination   # ←←← ИЗМЕНИ НА ЭТО
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
@@ -50,10 +64,18 @@ class FollowViewSet(mixins.ListModelMixin,
     permission_classes = [IsAuthenticated]
     filter_backends = [SearchFilter]
     search_fields = ['following__username']
-    pagination_class = None   # важно для тестов
+    pagination_class = None
 
     def get_queryset(self):
         return Follow.objects.filter(user=self.request.user)
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+    # Этот метод обязателен для Postman-тестов
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
