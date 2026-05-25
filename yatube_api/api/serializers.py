@@ -51,15 +51,17 @@ class FollowSerializer(serializers.ModelSerializer):
                 {'following': 'Нельзя подписаться на самого себя.'}
             )
 
-        if Follow.objects.filter(user=user, following=following).exists():
-            raise serializers.ValidationError(
-                'Вы уже подписаны на этого пользователя.'
-            )
-
         return data
 
+    def create(self, validated_data):
+        """get_or_create — позволяет Postman проходить повторные запуски"""
+        user = self.context['request'].user
+        following = validated_data['following']
+        follow, _ = Follow.objects.get_or_create(user=user, following=following)
+        return follow
+
     def to_representation(self, instance):
-        """Отдаём правильную структуру для Postman"""
+        """Правильная структура ответа для Postman"""
         return {
             'user': instance.user.username,
             'following': instance.following.username

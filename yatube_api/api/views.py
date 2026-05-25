@@ -64,18 +64,10 @@ class FollowViewSet(mixins.ListModelMixin,
     permission_classes = [IsAuthenticated]
     filter_backends = [SearchFilter]
     search_fields = ['following__username']
-    pagination_class = None
+    pagination_class = None   # важно для тестов
 
     def get_queryset(self):
         return Follow.objects.filter(user=self.request.user)
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
-
-    # Этот метод обязателен для Postman-тестов
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
