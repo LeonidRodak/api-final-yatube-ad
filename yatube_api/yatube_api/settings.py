@@ -1,9 +1,9 @@
 from pathlib import Path
 
+# Для указания времени жизни JWT-токенов (60 минут, 1 день)
 from datetime import timedelta
 
-from datetime import timedelta
-
+# Определяем базовую директорию проекта 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = "hhz7l-ltdismtf@bzyz+rple7*s*w$jak%whj@(@u0eok^f9k4"
@@ -19,10 +19,10 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "rest_framework",
-    "rest_framework_simplejwt",  # ←←← ДОБАВЬ ЭТУ СТРОКУ
-    "api",
-    "posts",
+    "rest_framework",  # Django REST Framework
+    "rest_framework_simplejwt",  # JWT-аутентификация
+    "api",  # приложение с API
+    "posts",  # приложение с моделями (Post, Group и т.д.)
 ]
 
 MIDDLEWARE = [
@@ -35,6 +35,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
+# Указываем, где лежит главный файл urls.py проекта
 ROOT_URLCONF = "yatube_api.urls"
 
 TEMPLATES_DIR = BASE_DIR / "templates"
@@ -93,21 +94,27 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATICFILES_DIRS = ((BASE_DIR / "static/"),)
 
+# Настройка DRF (Django REST Framework)
 REST_FRAMEWORK = {
+    # По умолчанию: читать могут все, изменять - только авторизованные
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticatedOrReadOnly",
     ],
+    # Используем JWT-токены для аутентификации
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
+    # По умолчанию 10 записей на страницу
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
     "PAGE_SIZE": 10,
 }
 
 
+# Настройка JWT (JSON Web Token)
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),  # Access-токен живёт 60 минут
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),  # Refresh-токен живёт 1 день
 }
 
+# Тип первичного ключа по умолчанию для новых моделей
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
